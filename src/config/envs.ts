@@ -4,8 +4,7 @@ import * as joi from 'joi';
 interface EnvVars {
     PORT: number;
     DATABASE_URL: string;
-    PRODUCTS_MS_HOST: string;
-    PRODUCTS_MS_PORT : number;
+    NATS_SERVERS : string[];
 }
 const envsSchema = joi.object({
     PORT: joi
@@ -16,19 +15,19 @@ const envsSchema = joi.object({
         .string()
         .required()
         .description('Host for the orders microservice'),
-    PRODUCTS_MS_HOST: joi
-        .string()
+    NATS_SERVERS: joi
+        .array()
+        .items(joi.string().uri())
         .required()
-        .description('Host for the products microservice'),
-    PRODUCTS_MS_PORT: joi
-        .number()
-        .required()
-        .description('Port for the products microservice'),
-});
-const { error, value } = envsSchema.validate(process.env, {
-    allowUnknown: true,
-    abortEarly: false,
-});
+    });
+const { error, value } = envsSchema.validate({
+    ...process.env,
+    NATS_SERVERS: process.env.NATS_SERVERS?.split(','),
+    }, {
+        allowUnknown: true,
+        abortEarly: false,
+    }
+);
 if (error) {
     throw new Error(`Config validation error: ${error.message}`);
 }
@@ -36,6 +35,5 @@ const envVars : EnvVars = value;
 export const envs = {
     port: envVars.PORT,
     dbURL: envVars.DATABASE_URL,
-    productsMsHost: envVars.PRODUCTS_MS_HOST,
-    productsMsPort: envVars.PRODUCTS_MS_PORT,
+    natsServers: envVars.NATS_SERVERS,
 }
