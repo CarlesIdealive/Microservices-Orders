@@ -5,6 +5,7 @@
 
 # postgres
 postgres/
+prisma/
 
 # Logs
 logs
